@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+vuln_db = "/opt/local/pkg/pkg-vulnerabilities"
+
+def update_vuln_db
+  %x{/opt/local/sbin/pkg_admin fetch-pkg-vulnerabilities}
+end
+
+unless File.exist?(vuln_db)
+  update_vuln_db
+end
+
+age = (Time.now - File.stat(vuln_db).mtime).to_i / 86400.0
+
+if age >= 1
+  update_vuln_db
+end
+
+vuln_cmd = "/opt/local/sbin/pkg_admin audit | awk '{print $2}' | sort | uniq | wc -l | awk '{print $1}'"
+vuln_out = %x{#{vuln_cmd}}.chomp
+
+
+out = { 
+  :package_vulns => vuln_out,
+}
+
+puts JSON::generate(out)
