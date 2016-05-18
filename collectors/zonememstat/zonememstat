@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+class ZoneMemStat
+
+  def self.mb_to_bytes(mb)
+    mb.to_i * 1024 * 1024
+  end
+
+  zms = {}
+
+  if File.exists?("/usr/sbin/zonememstat")
+    IO.popen("/usr/sbin/zonememstat", "r") do |f|
+      while l = f.gets
+        if md = l.match(%r{^\s+([\w-]+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)})
+          zms[md[1]] = {
+            :rss   => self.mb_to_bytes(md[2]),
+            :cap   => self.mb_to_bytes(md[3]),
+            :nover => md[4],
+            :pout  => self.mb_to_bytes(md[5]),
+          }
+	end
+      end
+    end
+
+    # if only one zone (ie: this isn't the GZ) then
+    # rename it to 'local' to make discovery easier
+    if zms.keys.length == 1 
+      name = zms.keys.first
+      zms["local"] = zms[name]
+      zms.delete(name)
+    end
+  end
+	
+  puts JSON::generate(zms)
+
+end
+
+
+__END__
+Sample zonememstat output:
+                                 ZONE  RSS(MB)  CAP(MB)    NOVER  POUT(MB)
+ b283eeaf-e535-447d-83d6-138e9cb509c8     1887    20480        0         0
