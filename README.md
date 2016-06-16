@@ -18,6 +18,7 @@ below.)
       -c, --config-file FILENAME       Alternative configuration file 
                                        (%/panoptimon.json)
       -D, --[no-]foreground            Don't daemonize (false)
+      -p, --http-port PORT             HTTP Port (8080)
           --collectors-dir DIR         Collectors directory (%/collectors)
           --plugins-dir DIR            Plugins directory (%/plugins)
           --list-collectors            list all collectors found

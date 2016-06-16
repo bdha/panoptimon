@@ -10,8 +10,7 @@ class HTTP
   def initialize (args={})
     @match = []
     @mount = []
-    # TODO args[:config].http_port, ssl, etc
-    @http = Thin::Server.new('0.0.0.0', 8080, self, signals: false);
+    @http = Thin::Server.new('0.0.0.0', args, self, signals: false);
   end
 
   def start
