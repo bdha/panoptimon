@@ -99,7 +99,7 @@ class Monitor
     return @http unless @http.nil?
     # TODO rescue LoadError => nicer error message
     require 'panoptimon/http'
-    @http = HTTP.new
+    @http = HTTP.new(config.http_port)
     logger.warn "Serving http on #{@http.hostport}"
     @http
   end

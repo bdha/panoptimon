@@ -26,6 +26,7 @@ def self.load_options (args)
     :plugins_dir    => '%/plugins',
     :collector_interval => 60,
     :collector_timeout  => 120,
+    :http_port      => 8080,
   }
 
   options = ->() {
@@ -44,6 +45,10 @@ def self.load_options (args)
       opts.on('-D', '--[no-]foreground',
         "Don't daemonize (#{not defaults[:daemonize]})"
       ) { |v| o[:daemonize] = ! v }
+
+      opts.on('-p', '--http-port PORT',
+        "HTTP Port (#{defaults[:http_port]})"
+      ) { |v| o[:http_port] = v }
 
       ['collectors', 'plugins'].each { |x|
         k = "#{x}_dir".to_sym
