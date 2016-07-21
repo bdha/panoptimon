@@ -47,7 +47,10 @@ metrics = status.keys.map {|pool|
   info['config'].split(/\n/).drop(1).each {|line|
     (dev, state, r, w, c) = line.split(/\s+/).drop(1)
     (r,w,c) = [r,w,c].map {|x| convert_10[x]}
-    if [r,w,c].find {|x| x > 0} || state != 'ONLINE'
+
+    next if %w[ logs spares ].include?(dev) # no rollup r w c
+
+    if [r,w,c].find {|x| x > 0} || ! %w[ ONLINE AVAIL ].include?(state)
       e = errors[dev] = {state: state, read: r, write: w, cksum: c}
       [:read, :write, :cksum].each {|k| e.delete(k) if e[k] == 0}
     end
