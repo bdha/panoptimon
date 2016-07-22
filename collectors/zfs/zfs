@@ -48,7 +48,7 @@ metrics = status.keys.map {|pool|
     (dev, state, r, w, c) = line.split(/\s+/).drop(1)
     (r,w,c) = [r,w,c].map {|x| convert_10[x]}
 
-    next if %w[ logs spares ].include?(dev) # no rollup r w c
+    next if %w[ cache logs spares ].include?(dev) # no rollup r w c
 
     if [r,w,c].find {|x| x > 0} || ! %w[ ONLINE AVAIL ].include?(state)
       e = errors[dev] = {state: state, read: r, write: w, cksum: c}
@@ -75,7 +75,7 @@ metrics = status.keys.map {|pool|
 IO.popen(zfs_cmd + ['list', '-H', '-o', 'name,used,avail'] +
   metrics.keys) {|fh|
   fh.readlines.each {|line|
-    (pool, used, free) = line.split(/\s+/) 
+    (pool, used, free) = line.split(/\s+/)
 
     usedG = metrics[pool][:used] = convert_GB[used]
     freeG = metrics[pool][:free] = convert_GB[free]
