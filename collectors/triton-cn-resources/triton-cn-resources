@@ -5,6 +5,7 @@ for CN in $( /opt/smartdc/bin/sdc-cnapi --no-headers /servers | json -aH uuid ) 
 
   for RES in unreserved_cpu unreserved_ram unreserved_disk ; do
     CAP=$( /opt/smartdc/bin/sdc-cnapi --no-headers /servers/$CN | json $RES )
+    [[ -z "${CAP}" ]] && CAP=0
     echo "{\"$NAME|$RES\": $CAP}"
   done
 
