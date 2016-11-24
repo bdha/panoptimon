@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+class IpmiSensors
+  temps = {}
+
+  case
+  when ENV['IPMI_TEST']
+    io = DATA
+  when File.exists?("/usr/sbin/ipmitool")
+    io = IO.popen("/usr/sbin/ipmitool sdr type Temperature", "r")
+  else
+    io = nil
+  end
+
+  if io
+    while l = io.gets
+      if md = l.match(%r{(.*?)\s+\|.*\|\s([\d.]+)\sdegrees C})
+        sensor = md[1].gsub(%r{\s+}, '-')
+        value  = md[2].to_i
+        temps[sensor] = value
+      end
+    end
+  end
+
+  puts JSON::generate({
+    :temperature => temps
+  })
+end
+
+__END__
+[root@gp0 (nyc-1) ~]#  ipmitool sdr type Temperature
+Ambient          | 01h | ok  | 39.0 | 19 degrees C
+Systemboard      | 02h | ok  |  7.0 | 53 degrees C
+VR CPU1          | 03h | ok  |  7.0 | 62 degrees C
+VR MEM AB        | 04h | ok  |  7.0 | 43 degrees C
+VR MEM CD        | 05h | ok  |  7.0 | 52 degrees C
+VR CPU2          | 06h | ok  |  7.0 | 44 degrees C
+VR MEM EF        | 07h | ok  |  7.0 | 46 degrees C
+VR MEM GH        | 08h | ok  |  7.0 | 40 degrees C
+CPU1             | 09h | ok  |  3.0 | 65 degrees C
+CPU2             | 0Ah | ok  |  3.1 | 56 degrees C
+MEM A            | 0Bh | ok  | 32.0 | 42 degrees C
+MEM B            | 0Ch | ok  | 32.1 | 41 degrees C
+MEM C            | 0Dh | ok  | 32.2 | 51 degrees C
+MEM D            | 0Eh | ok  | 32.3 | 45 degrees C
+MEM E            | 0Fh | ok  | 32.4 | 46 degrees C
+MEM F            | 10h | ok  | 32.5 | 47 degrees C
+MEM G            | 11h | ok  | 32.6 | 37 degrees C
+MEM H            | 12h | ok  | 32.7 | 35 degrees C
+PSU1 Inlet       | 13h | ok  | 10.4 | 41 degrees C
+PSU2 Inlet       | 14h | ok  | 10.8 | 41 degrees C
+PSU1             | 15h | ok  | 10.4 | 63 degrees C
+PSU2             | 16h | ok  | 10.8 | 63 degrees C
+Ambient          | 3Eh | ok  | 39.0 | Device Present
