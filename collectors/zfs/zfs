@@ -71,6 +71,12 @@ metrics = status.keys.map {|pool|
   [pool, m]
 }.to_h
 
+# if we're in a local zone, add its name to datasets to collect
+# space metrics for. assume zones live under `zones/`
+zonename = %x[ zonename ].chomp
+if $?.success? && zonename != 'global' && metrics.has_key?('zones')
+  metrics["zones/#{zonename}"] = {}
+end
 
 IO.popen(zfs_cmd + ['list', '-H', '-o', 'name,used,avail'] +
   metrics.keys) {|fh|
@@ -84,5 +90,12 @@ IO.popen(zfs_cmd + ['list', '-H', '-o', 'name,used,avail'] +
   }
 }
 raise "zpool error - #{$?.exitstatus}" unless $?.success?
+
+# if we collected local zone space metrics, rename that dataset
+# to 'local' for convenience 
+if metrics.has_key?("zones/#{zonename}")
+  metrics["local"] = metrics["zones/#{zonename}"]
+  metrics.delete("zones/#{zonename}")
+end
 
 puts JSON::generate(metrics)
